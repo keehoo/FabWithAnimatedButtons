@@ -8,6 +8,7 @@
     tools:layout_editor_absoluteY="81dp">
 
     <keehoo.kree.com.customcompoundfab.CustomFab
+        android:id="@+id/fab"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
