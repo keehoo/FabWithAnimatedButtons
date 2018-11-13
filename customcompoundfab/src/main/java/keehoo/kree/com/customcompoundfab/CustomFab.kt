@@ -3,8 +3,13 @@ package keehoo.kree.com.customcompoundfab
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
+import android.content.res.Resources
+import android.graphics.PorterDuff
+import android.support.annotation.ColorInt
+import android.support.annotation.ColorRes
 import android.support.constraint.ConstraintLayout
 import android.support.constraint.ConstraintSet
+import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -19,7 +24,7 @@ class CustomFab @JvmOverloads constructor(
 
     var buttons: MutableList<Button> = mutableListOf()
 
-    var isCollapsed: Boolean = true
+    var isExpanded: Boolean = false
         private set(value) {
             field = value
             animateFab()
@@ -43,21 +48,22 @@ class CustomFab @JvmOverloads constructor(
         val lottie: LottieAnimationView = lottieAnimationView
 
         lottie.setOnClickListener {
-            animateFab()
             fabFlipped()
+            animateFab()
         }
     }
 
     private fun fabFlipped() {
-        isCollapsed = !isCollapsed
+        isExpanded = !isExpanded
     }
 
     private fun animateFab() {
-        val animator: ValueAnimator = if (isCollapsed) {
+        val animator: ValueAnimator = if (isExpanded) {
             ValueAnimator.ofFloat(0.1F, 0.5F).setDuration(300)
         } else {
             ValueAnimator.ofFloat(0.6F, 1.0F).setDuration(300)
         }
+        animator.removeAllUpdateListeners()
         animator.addUpdateListener {
             lottieAnimationView.progress = it.animatedValue as Float
         }
@@ -66,10 +72,13 @@ class CustomFab @JvmOverloads constructor(
 
     fun onAnimation(view: View, shouldDisappear: Boolean) {
 
+        val totalButtons = buttons.size.toFloat()
+        val currentButton = buttons.indexOf(view as Button) + 1.toFloat()
         val measuredWidth = view.rootView.measuredWidth
-        val trueExtend = (-50F.div(100)).times(measuredWidth)
+        val modified = currentButton.div(totalButtons).div(75f).times(-1)
+        val trueExtend = modified.times(measuredWidth).times(60f)
 
-        if (isCollapsed) {
+        if (isExpanded) {
             val animation = ObjectAnimator.ofFloat(view, "translationX", trueExtend)
             animation.duration = 300
             animation.addUpdateListener {
@@ -91,9 +100,7 @@ class CustomFab @JvmOverloads constructor(
             animation.duration = 300
             animation.addUpdateListener {
                 when (it.currentPlayTime) {
-                    0L -> {
-                        view.translationZ = 0f
-                    }
+                    0L -> view.translationZ = 0f
                     in 220..300 -> {
                         if (view.visibility == View.VISIBLE && shouldDisappear) view.visibility = View.INVISIBLE
                     }
@@ -103,25 +110,57 @@ class CustomFab @JvmOverloads constructor(
         }
     }
 
-    fun addButtons(args: Map<Int, () -> Unit>) {
+    fun addButtons(args: Map<Int, () -> Unit>, params: FabParams = FabParams()) {
 
-        val layout = findViewById<ConstraintLayout>(R.id.main_fab_layout)
-        val set = ConstraintSet()
+        var i = 0
+        args.forEach { entry ->
 
-        val view = Button(context)
-        view.id = View.generateViewId()
-        view.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(args.keys.first()), null, null)
-        view.setPadding(8,8,8,8)
-        view.setOnClickListener {
-            args.values.first()
+            val layout = findViewById<ConstraintLayout>(R.id.main_fab_layout)
+            val set = ConstraintSet()
+
+            val view = Button(context)
+            view.id = View.generateViewId()
+            view.layoutParams = ConstraintLayout.LayoutParams(
+                    params.buttonSize.toPx,
+                    params.buttonSize.toPx
+            )
+            view.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(entry.key), null, null)
+            view.compoundDrawablePadding = 8
+            view.setOnClickListener { entry.value.invoke() }
+            view.setBackgroundResource(R.drawable.round_button)
+            view.clipToOutline
+            view.elevation = 0.0f
+            view.visibility = View.INVISIBLE
+            layout.addView(view, i++)
+            tint(view, ContextCompat.getColor(context, params.buttonsColor))
+
+            set.clone(layout)
+            set.connect(view.id, ConstraintSet.END, layout.id, ConstraintSet.END, params.buttonEndOffset.toPx
+            )
+            set.connect(view.id, ConstraintSet.BOTTOM, layout.id, ConstraintSet.BOTTOM, params.buttonBottomOffset.toPx
+            )
+            set.applyTo(layout)
+
+            buttons.add(view)
         }
-        layout.addView(view, 0)
-        set.clone(layout)
-        set.connect(view.id, ConstraintSet.END, layout.id, ConstraintSet.END, 8)
-        set.connect(view.id, ConstraintSet.BOTTOM, layout.id, ConstraintSet.BOTTOM, 28)
-        set.applyTo(layout)
+    }
 
-        buttons.add(view)
-
+    fun tint(button: Button, @ColorInt color: Int) {
+        val drawables = button.compoundDrawables
+        for (drawable in drawables) {
+            drawable?.setColorFilter(color, PorterDuff.Mode.SRC_IN)
+        }
     }
 }
+
+val Int.toPx: Int
+    get() = (this * Resources.getSystem().displayMetrics.density).toInt()
+
+data class FabParams(
+        val buttonSize: Int = 50,
+        @ColorRes val buttonsColor: Int = R.color.accent_material_light,
+        val buttonBottomOffset: Int = 16,
+        val buttonEndOffset: Int = 16
+
+)
+
