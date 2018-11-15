@@ -51,8 +51,17 @@ class CustomFab @JvmOverloads constructor(
             }
         }
 
+
 //        (this.layoutParams as MarginLayoutParams).setMargins(0, 0, 50, 0)
     }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        var result: String = ""
+        (lottieAnimationView.layoutParams as ConstraintLayout.LayoutParams).marginEnd = endMargin ?: 0
+
+    }
+
 
     var isExpanded: Boolean = false
         set(value) {
@@ -94,7 +103,6 @@ class CustomFab @JvmOverloads constructor(
                 .minus(viewPosition.x)
                 .removeBarHeight(permanentMenuKeys, isHorizontal, h)
                 .minus(params.buttonSize.toPx)
-//                .minus((lottieAnimationView.layoutParams as ConstraintLayout.LayoutParams).marginEnd.toPx.times(2)))
                 .times(currentButton.div(totalButtons))
                 .times(-1)
                 )
@@ -174,7 +182,7 @@ class CustomFab @JvmOverloads constructor(
                 with(set) {
                     clone(layout)
                     setMargin(lottieAnimationView.id, 2, endMargin ?: 0)
-                    connect(id, ConstraintSet.END, layout.id, ConstraintSet.END, params.buttonEndOffset.toPx)
+                    connect(id, ConstraintSet.END, layout.id, ConstraintSet.END, params.buttonEndOffset.toPx.plus(endMargin?: 0))
                     connect(id, ConstraintSet.BOTTOM, layout.id, ConstraintSet.BOTTOM, params.buttonBottomOffset.toPx)
                     applyTo(layout)
                 }

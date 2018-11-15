@@ -16,7 +16,9 @@ class MainActivity : AppCompatActivity() {
         val drawableIdToLambda: Map<Int, () -> Unit> = mapOf(
                 R.drawable.ic_person_black_24dp to { logstuff("A") },
                 R.drawable.ic_filter to { logstuff("B") },
-                R.drawable.ic_location_24dp to { logstuff("C") }
+                R.drawable.ic_location_24dp to { logstuff("C") },
+                R.drawable.ic_child_care_black_24dp to { logstuff("C") },
+                R.drawable.ic_cake_black_24dp to { logstuff("C") }
         )
 
         fab.setup(
