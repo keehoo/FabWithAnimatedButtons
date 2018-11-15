@@ -3,7 +3,7 @@ package keehoo.kree.com.fejbi
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
+import android.widget.Toast
 import keehoo.kree.com.customcompoundfab.FabParams
 import kotlinx.android.synthetic.main.activity_main.fab
 
@@ -17,9 +17,6 @@ class MainActivity : AppCompatActivity() {
                 R.drawable.ic_person_black_24dp to { logstuff("A") },
                 R.drawable.ic_filter to { logstuff("B") },
                 R.drawable.ic_location_24dp to { logstuff("C") }
-//                R.drawable.ic_whatshot_black_24dp to { logstuff("D") },
-//                R.drawable.ic_cake_black_24dp to { logstuff("E") },
-//                R.drawable.ic_child_care_black_24dp to { logstuff("F") }
         )
 
         fab.setup(
@@ -31,7 +28,7 @@ class MainActivity : AppCompatActivity() {
                         buttonBottomOffset = 12,
                         buttonEndOffset = 2,
                         collapseAfterButtonClick = true,
-                        extractionOffset = 24
+                        animationDuration = 1000
                 )
         )
         fab.isPowerSaverMode = false
@@ -39,6 +36,6 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("LogNotTimber")
     private fun logstuff(s: String) {
-        Log.wtf("tag", s)
+        Toast.makeText(this, " Clicked $s", Toast.LENGTH_LONG).show()
     }
 }
